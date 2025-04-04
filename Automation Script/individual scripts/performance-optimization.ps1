@@ -20,15 +20,15 @@ Write-Host "`n[+] Cleaning Temporary Files..." -ForegroundColor Cyan
 
 # Clear Windows Temp Files
 Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
-Write-Host " - Windows Temp Files Cleaned"
+Write-Host " - Windows Temp Files Cleaned"   #Deletes all files in C:\Windows\Temp*
 
 # Clear User Temp Files
 Remove-Item -Path "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue
-Write-Host " - User Temp Files Cleaned"
+Write-Host " - User Temp Files Cleaned"   #Deletes all user temp files in $env:TEMP*
 
 # Clear Recycle Bin
 Clear-RecycleBin -Force -ErrorAction SilentlyContinue
-Write-Host " - Recycle Bin Emptied"
+Write-Host " - Recycle Bin Emptied"   #Clears the Recycle Bin
 
 # -------------------------
 # 2. Restart Critical Services
@@ -46,11 +46,15 @@ foreach ($service in $services) {
         Start-Service -Name $service -ErrorAction SilentlyContinue
         Write-Host " - Started $service" -ForegroundColor Green
     }
-}
+}   #Checks if each service is running. If running, Restart it. If stopped, Start it
 
 # -------------------------
 # 3. Install Patches (Windows Updates)
 # -------------------------
+#Installs all available updates
+#Automatically accepts updates
+#Auto-reboots if necessary
+
 Write-Host "`n[+] Installing Windows Updates..." -ForegroundColor Cyan
 
 # Install Windows Updates and Accept All
@@ -62,6 +66,8 @@ Write-Host " - Windows Updates Installed" -ForegroundColor Green
 # -------------------------
 # 4. Log Results
 # -------------------------
+#Logs the optimization results into a file
+
 Write-Host "`n[+] Saving Performance Data to File..." -ForegroundColor Cyan
 
 $data = @"
