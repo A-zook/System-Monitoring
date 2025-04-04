@@ -2,9 +2,17 @@
 # Automated System Management Script
 # =========================
 
+# Load Windows Forms for popup notification
+Add-Type -AssemblyName System.Windows.Forms
+
 # Define log file location
 $logFile = "C:\Monitoring\system_automation_log.txt"
 $date = Get-Date -Format "yyyy.MM.dd_HH:mm:ss"
+
+# Create log directory if missing
+if (-not (Test-Path "C:\Monitoring")) {
+     New-Item -ItemType Directory -Path "C:\Monitoring" -Force | Out-Null
+}
 
 # Function to log messages
 function Write-Log {
@@ -114,16 +122,39 @@ function Harden-Security {
 # ------------------------------------
 # MAIN EXECUTION
 # ------------------------------------
-Write-Log "==== STARTING SYSTEM MANAGEMENT SCRIPT ===="
-Monitor-System
-Analyze-Logs
-Optimize-Performance
-Harden-Security
-Write-Log "==== SYSTEM MANAGEMENT SCRIPT COMPLETED ===="
+#Runs all functions in sequence.
+#Logs the process.
+#Shows a success or failure popup
+try {
+    Write-Log "==== STARTING SYSTEM MANAGEMENT SCRIPT ===="
+    Monitor-System
+    Analyze-Logs
+    Optimize-Performance
+    Harden-Security
+    Write-Log "==== SYSTEM MANAGEMENT SCRIPT COMPLETED ===="
 
-# ------------------------------------
-# AUTOMATION (Schedule Task)
-# ------------------------------------
-# Create Scheduled Task using Task Scheduler:
-# Example command to create a task:
-# schtasks /create /tn "System_Monitoring" /tr "powershell.exe -ExecutionPolicy Bypass -File C:\Scripts\system_monitoring.ps1" /sc daily /st 00:00
+    # Show success popup
+    [System.Windows.Forms.MessageBox]::Show(
+        "All system management tasks completed successfully!`n`nSee log at: $logFile",
+        "System Maintenance Complete",
+        [System.Windows.Forms.MessageBoxButtons]::OK,
+        [System.Windows.Forms.MessageBoxIcon]::Information
+    )
+} catch {
+    Write-Log "CRITICAL ERROR: $_"
+
+    # Show error popup
+    [System.Windows.Forms.MessageBox]::Show(
+        "Script encountered an error!`n`nError: $_`n`nCheck log at: $logFile",
+        "System Maintenance Failed",
+        [System.Windows.Forms.MessageBoxButtons]::OK,
+        [System.Windows.Forms.MessageBoxIcon]::Error
+    )
+}
+
+# -----------------------
+# Schedule Task Creation 
+# -------------------------
+$taskAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -File `"$PSCommandPath`""
+$taskTrigger = New-ScheduledTaskTrigger -Daily -At 10am
+Register-ScheduledTask -TaskName "System_Monitoring" -Action $taskAction -Trigger $taskTrigger -RunLevel Highest -Force
