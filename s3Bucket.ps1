@@ -22,4 +22,6 @@ aws s3 cp "C:\Users\UserName\test-file.txt" s3://azi.first.bucket/
 #Generate a Pre-Signed URL
 aws s3 presign s3://azi.first.bucket/test-file.txt --expires-in 10800
 
+#End of Script
+
 
